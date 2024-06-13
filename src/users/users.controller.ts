@@ -11,6 +11,7 @@ import {
 import { UsersService } from './users.service';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthUser } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
@@ -20,12 +21,13 @@ export class UsersController {
   ) {}
 
   @Post('register')
-  async register(@Body() createUserDto: any) {
+  async register(@Body() createUserDto: Partial<AuthUser>) {
+    console.log('registrando usuário ');
     return this.authService.register(createUserDto);
   }
 
   @Post('login')
-  async login(@Body() loginUserDto: any) {
+  async login(@Body() loginUserDto: Partial<AuthUser>) {
     return this.authService.login(loginUserDto);
   }
 
@@ -49,7 +51,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: any) {
+  update(@Param('id') id: string, @Body() updateUserDto: Partial<AuthUser>) {
     return this.usersService.update(+id, updateUserDto);
   }
 
