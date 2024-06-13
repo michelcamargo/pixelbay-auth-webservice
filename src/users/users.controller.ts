@@ -20,17 +20,6 @@ export class UsersController {
     private readonly authService: AuthService,
   ) {}
 
-  @Post('register')
-  async register(@Body() createUserDto: Partial<AuthUser>) {
-    console.log('registrando usuário ');
-    return this.authService.register(createUserDto);
-  }
-
-  @Post('login')
-  async login(@Body() loginUserDto: Partial<AuthUser>) {
-    return this.authService.login(loginUserDto);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
@@ -40,7 +29,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    // Exemplo de uso do AuthService
     const user = await this.usersService.findOne(Number(id));
     const isAuthenticated = await this.authService.validateUser(
       user.email,

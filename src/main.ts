@@ -3,12 +3,15 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const appConfig = app.get(ConfigService);
   const port = appConfig.get<number>('APP_PORT') || 7171;
 
+  app.useGlobalPipes(new ValidationPipe());
+  
   let swaggerOptions: Omit<OpenAPIObject, 'paths'>;
 
   // eslint-disable-next-line prefer-const
@@ -20,8 +23,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, swaggerOptions);
   SwaggerModule.setup('api', app, document);
-
-  console.log('APP CONFIG', appConfig);
 
   await app.listen(port);
 }
