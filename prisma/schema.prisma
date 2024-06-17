@@ -1,11 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  schema          = "pb_auth"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -13,9 +9,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model AuthUser {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  name     String
+model AuthUserView {
+  id        Int    @id @default(autoincrement())
+  client_id Int
+  oauth_id  Int
+  // user      User   @relation(fields: [user_id], references: [user_id])
+  user_id   Int    @unique
+  User      User[]
+  User      User[]
+}
+
+model ProfileUserView {
+  id        Int     @id @default(autoincrement())
+  firstname String?
+  lastname  String?
+  fullname  String
+  // user      User    @relation(fields: [user_id], references: [user_id])
+  user_id   Int     @unique
+  User      User[]
+  User      User[]
+}
+
+model User {
+  user_id           Int              @id @default(autoincrement())
+  username          String?          @unique
+  email             String           @unique
+  client_id         String
+  oauth_id          String
+  password          String
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+  ProfileUserView   ProfileUserView? @relation("UserToProfile", fields: [user_id], references: [user_id])
+  AuthUserView      AuthUserView?    @relation("UserToAuth", fields: [user_id], references: [user_id])
+  // AuthUserView      AuthUserView?    @relation(fields: [authUserViewId], references: [id])
+  // ProfileUserView   ProfileUserView? @relation(fields: [profileUserViewId], references: [id])
+  AuthUserView      AuthUserView?    @relation(fields: [authUserViewId], references: [id])
+  authUserViewId    Int?
+  ProfileUserView   ProfileUserView? @relation(fields: [profileUserViewId], references: [id])
+  profileUserViewId Int?
 }
