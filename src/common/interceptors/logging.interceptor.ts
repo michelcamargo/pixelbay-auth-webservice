@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 import { winstonLogger } from '../../config/app/winston.config';
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
+class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const method = request.method;
@@ -29,3 +29,5 @@ export class LoggingInterceptor implements NestInterceptor {
     );
   }
 }
+
+export default LoggingInterceptor;

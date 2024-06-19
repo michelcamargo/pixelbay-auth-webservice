@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { SignUpUserDto } from './dto/signup-user.dto';
@@ -7,6 +11,7 @@ import { UserEntity } from '../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PbEntity } from '../../common/entities/base.entity';
+import userHelper from './helpers/user.helper';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +31,7 @@ export class AuthService {
     return null;
   }
 
-  async login(userDto: SignInUserDto) {
+  async signIn(userDto: SignInUserDto) {
     const matchedUser = await this.validateUser(
       userDto.email,
       userDto.password,
@@ -56,26 +61,40 @@ export class AuthService {
     };
   }
 
-  async register({ alias, email, password, client_id }: SignUpUserDto) {
-    const secret = bcrypt.hashSync(password, 10);
+  async signUp(userDto: SignUpUserDto) {
+    try {
+      const userAlreadyExists = await userHelper.checkIfUserExists(
+        this.userRepository,
+        userDto,
+      );
 
-    const userDTO = this.userRepository.create({
-      alias,
-      email,
-      password: secret,
-      client_id: client_id ?? 1,
-    });
+      if (userAlreadyExists) {
+        throw new ConflictException('Email ou apelido já registrados.');
+      }
 
-    const created = await this.userRepository.save(userDTO);
+      const { alias, email, password, client_id } = userDto;
+      const secret = bcrypt.hashSync(password, 10);
 
-    const userInfo = PbEntity.pick(created, [
-      'id',
-      'alias',
-      'email',
-      'client_id',
-    ]);
+      const user = this.userRepository.create({
+        alias,
+        email,
+        password: secret,
+        client_id: client_id ?? 1,
+      });
 
-    const { access_token } = await this.login({ email, password });
-    return { ...userInfo, access_token };
+      const created = await this.userRepository.save(user);
+
+      const userInfo = PbEntity.pick(created, [
+        'id',
+        'alias',
+        'email',
+        'client_id',
+      ]);
+
+      const { access_token } = await this.signIn({ email, password });
+      return { ...userInfo, access_token };
+    } catch (err) {
+      console.error(err);
+    }
   }
 }

@@ -5,10 +5,11 @@ import { AuthModule } from './models/auth/auth.module';
 import appConfig from './config/app/app.config';
 import typeOrmConfig from './config/db/typeorm.config';
 import { WinstonModule } from 'nest-winston';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import LoggingInterceptor from './common/interceptors/logging.interceptor';
 import * as winston from 'winston';
 import { WinstonMiddleware } from './common/middlewares/winston.middleware';
+import RootExceptionsFilter from './common/filters/root-exceptions.filter';
 
 @Module({
   imports: [
@@ -22,18 +23,22 @@ import { WinstonMiddleware } from './common/middlewares/winston.middleware';
       inject: [ConfigService],
       useFactory: typeOrmConfig,
     }),
-    AuthModule,
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console(),
         new winston.transports.File({ filename: 'application.log' }),
       ],
     }),
+    AuthModule,
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: RootExceptionsFilter,
     },
   ],
 })

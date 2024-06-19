@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import LoggingInterceptor from './common/interceptors/logging.interceptor';
 import swaggerHelper from './common/helpers/swagger.helper';
 
 async function bootstrap() {
