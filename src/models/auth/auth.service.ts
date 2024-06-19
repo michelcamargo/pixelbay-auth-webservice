@@ -3,24 +3,25 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { SignUpUserDto } from './dto/signup-user.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
-import { User } from '../users/entities/user.entity';
+import { UserEntity } from '../users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PbEntity } from '../../common/entities/base.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<User> {
+  async validateUser(email: string, pass: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({ where: { email } });
 
     if (user && bcrypt.compareSync(pass, user.password)) {
       const { password: _pwd, ...userInfo } = user;
-      return userInfo as User;
+      return userInfo as UserEntity;
     }
     return null;
   }
@@ -35,28 +36,46 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const { password: _pwd, id: _id, ...userInfo } = matchedUser;
     const payload = { username: matchedUser.email, sub: matchedUser.id };
+    const access_token = this.jwtService.sign(payload);
+
+    if (!access_token) {
+      throw new UnauthorizedException('Falha ao gerar acesso');
+    }
+
+    const userInfo = PbEntity.pick(matchedUser, [
+      'id',
+      'alias',
+      'email',
+      'client_id',
+    ]);
 
     return {
       ...userInfo,
-      access_token: this.jwtService.sign(payload),
+      access_token,
     };
   }
 
-  async register(userDto: SignUpUserDto) {
-    const { username, email, password } = userDto;
+  async register({ alias, email, password, client_id }: SignUpUserDto) {
     const secret = bcrypt.hashSync(password, 10);
-    const createdUser = this.userRepository.create({
-      alias: username,
-      email: email,
+
+    const userDTO = this.userRepository.create({
+      alias,
+      email,
       password: secret,
+      client_id: client_id ?? 1,
     });
 
-    const auth = { email: createdUser.email, password: password };
-    const { password: _pwd, id: _id, ...userInfo } = createdUser;
+    const created = await this.userRepository.save(userDTO);
 
-    const { access_token } = await this.login(auth);
+    const userInfo = PbEntity.pick(created, [
+      'id',
+      'alias',
+      'email',
+      'client_id',
+    ]);
+
+    const { access_token } = await this.login({ email, password });
     return { ...userInfo, access_token };
   }
 }

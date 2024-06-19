@@ -1,12 +1,13 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { PbEntity } from '../../../common/entities/base.entity';
 
-@Entity('PB_USERS')
-export class User {
+@Entity('pb_users')
+export class UserEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  alias: string;
+  @Column({ unique: true, nullable: true })
+  alias?: string;
 
   @Column({ unique: true })
   email: string;

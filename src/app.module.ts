@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './models/auth/auth.module';
 import appConfig from './config/app/app.config';
-import { getTypeOrmConfig } from './config/db/typeorm.config';
+import typeOrmConfig from './config/db/typeorm.config';
 import { WinstonModule } from 'nest-winston';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -20,7 +20,7 @@ import { WinstonMiddleware } from './common/middlewares/winston.middleware';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: getTypeOrmConfig,
+      useFactory: typeOrmConfig,
     }),
     AuthModule,
     WinstonModule.forRoot({
