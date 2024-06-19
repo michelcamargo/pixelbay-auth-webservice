@@ -7,7 +7,5 @@ export default registerAs('app', () => {
     name: process.env.APP_NAME,
     url: process.env.APP_URL,
     port: process.env.APP_PORT,
-    // jwtSecret: process.env.JWT_SECRET,
-    // databaseUrl: process.env.DATABASE_URL,
   };
 });

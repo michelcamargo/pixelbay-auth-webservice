@@ -9,12 +9,16 @@ import swaggerHelper from './common/helpers/swagger.helper';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const appConfig = app.get(ConfigService);
-  const port = appConfig.get<number>('APP_PORT') || 7171;
+  const runtimeUrl = appConfig.get<number>('APP_URL');
+  const runtimePort = appConfig.get<number>('APP_PORT');
 
+  if (!runtimeUrl || !runtimePort) throw Error('Sem variáveis de ambiente');
+  
   swaggerHelper.generateAppDocument(app);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new LoggingInterceptor());
 
-  await app.listen(port);
+  await app.listen(runtimePort);
+  console.warn(`PIXELBAY AUTH AT: ${runtimeUrl}`);
 }
 bootstrap();

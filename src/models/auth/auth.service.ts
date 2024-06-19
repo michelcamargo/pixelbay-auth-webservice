@@ -12,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PbEntity } from '../../common/entities/base.entity';
 import userHelper from './helpers/user.helper';
+import { AvailabilityUserDto } from './dto/availability-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +30,10 @@ export class AuthService {
       return userInfo as UserEntity;
     }
     return null;
+  }
+
+  async checkUserAvailability({ email, alias }: AvailabilityUserDto) {
+    return !await userHelper.checkIfUserExists(this.userRepository, email, alias);
   }
 
   async signIn(userDto: SignInUserDto) {
@@ -63,16 +68,18 @@ export class AuthService {
 
   async signUp(userDto: SignUpUserDto) {
     try {
+      const { alias, email, password, client_id } = userDto;
+
       const userAlreadyExists = await userHelper.checkIfUserExists(
         this.userRepository,
-        userDto,
+        email,
+        alias,
       );
 
       if (userAlreadyExists) {
         throw new ConflictException('Email ou apelido já registrados.');
       }
 
-      const { alias, email, password, client_id } = userDto;
       const secret = bcrypt.hashSync(password, 10);
 
       const user = this.userRepository.create({
