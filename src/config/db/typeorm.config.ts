@@ -32,6 +32,6 @@ export const getTypeOrmConfig = (
     migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
     autoLoadEntities: true,
     synchronize: true, // Deve ser false em produção
-    logging: true,
+    logging: false,
   };
 };
