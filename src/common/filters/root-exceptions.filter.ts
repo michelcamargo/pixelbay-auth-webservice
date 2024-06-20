@@ -29,8 +29,6 @@ class RootExceptionsFilter extends BaseExceptionFilter {
       }
     }
 
-    console.error('Exception caught:', exception);
-
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
