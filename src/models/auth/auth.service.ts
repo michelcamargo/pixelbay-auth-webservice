@@ -33,7 +33,11 @@ export class AuthService {
   }
 
   async checkUserAvailability({ email, alias }: AvailabilityUserDto) {
-    return !await userHelper.checkIfUserExists(this.userRepository, email, alias);
+    return !(await userHelper.checkIfUserExists(
+      this.userRepository,
+      email,
+      alias,
+    ));
   }
 
   async signIn(userDto: SignInUserDto) {
@@ -53,15 +57,8 @@ export class AuthService {
       throw new UnauthorizedException('Falha ao gerar acesso');
     }
 
-    const userInfo = PbEntity.pick(matchedUser, [
-      'id',
-      'alias',
-      'email',
-      'client_id',
-    ]);
-
     return {
-      ...userInfo,
+      ...PbEntity.pick(matchedUser, ['id', 'alias', 'email', 'client_id']),
       access_token,
     };
   }
@@ -91,15 +88,11 @@ export class AuthService {
 
       const created = await this.userRepository.save(user);
 
-      const userInfo = PbEntity.pick(created, [
-        'id',
-        'alias',
-        'email',
-        'client_id',
-      ]);
-
       const { access_token } = await this.signIn({ email, password });
-      return { ...userInfo, access_token };
+      return {
+        ...PbEntity.pick(created, ['id', 'alias', 'email', 'client_id']),
+        access_token,
+      };
     } catch (err) {
       console.error(err);
     }
