@@ -46,7 +46,7 @@ class RootExceptionsFilter extends BaseExceptionFilter {
         return exceptionResponse.error;
       }
     }
-    return exceptionResponse.toString();
+    return exceptionResponse?.toString();
   }
 }
 
