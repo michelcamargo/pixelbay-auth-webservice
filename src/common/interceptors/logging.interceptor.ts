@@ -6,25 +6,42 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { winstonLogger } from '../../config/app/winston.config';
+// import { winstonLogger } from '../../config/app/winston.config';
 
 @Injectable()
 class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
-    const method = request.method;
-    const url = request.url;
+    const { method, url, headers, body, query, params, ip } = request;
 
-    const now = Date.now();
+    console.log(
+      JSON.stringify(
+        {
+          [method]: url,
+          url,
+          headers: {
+            host: headers['host'],
+            userAgent: headers['user-agent'],
+          },
+          body,
+          query,
+          params,
+          ip,
+          timestamp: new Date().toISOString(),
+        },
+        null,
+        2,
+      ),
+    );
 
     return next.handle().pipe(
       tap(() => {
-        const response = context.switchToHttp().getResponse();
-        const statusCode = response.statusCode;
-
-        winstonLogger.info(
-          `${method} ${url} ${statusCode} ${Date.now() - now}ms`,
-        );
+        // const response = context.switchToHttp().getResponse();
+        // const statusCode = response.statusCode;
+        //
+        // winstonLogger.info(
+        //   `${method} ${url} ${statusCode} ${Date.now() - now}ms`,
+        // );
       }),
     );
   }
