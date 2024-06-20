@@ -18,7 +18,6 @@ class LoggingInterceptor implements NestInterceptor {
       JSON.stringify(
         {
           [method]: url,
-          url,
           headers: {
             host: headers['host'],
             userAgent: headers['user-agent'],
