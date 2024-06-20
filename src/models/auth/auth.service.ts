@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -13,6 +14,7 @@ import { Repository } from 'typeorm';
 import { PbEntity } from '../../common/entities/base.entity';
 import userHelper from './helpers/user.helper';
 import { AvailabilityUserDto } from './dto/availability-user.dto';
+import { isEmail, maxLength, minLength } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -22,10 +24,13 @@ export class AuthService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<UserEntity> {
-    const user = await this.userRepository.findOne({ where: { email } });
+  async validateUser(username: string, secret: string): Promise<UserEntity> {
+    const user = await userHelper.findUserByUsername(
+      this.userRepository,
+      username,
+    );
 
-    if (user && bcrypt.compareSync(pass, user.password)) {
+    if (user && bcrypt.compareSync(secret, user.password)) {
       const { password: _pwd, ...userInfo } = user;
       return userInfo as UserEntity;
     }
@@ -33,6 +38,28 @@ export class AuthService {
   }
 
   async checkUserAvailability({ email, alias }: AvailabilityUserDto) {
+    if (alias && alias.length && alias !== '') {
+      if (!minLength(alias, 6) || !maxLength(alias, 32)) {
+        throw new BadRequestException(
+          'O alias (apelido) deve possuir entre 6 a 32 dígitos',
+        );
+      }
+    }
+
+    if (!email) {
+      throw new BadRequestException('Informe o email a cadastrar');
+    }
+
+    if (!minLength(email, 8) || !maxLength(email, 63)) {
+      throw new BadRequestException(
+        'O email deve possuir entre 8 a 63 dígitos',
+      );
+    }
+
+    if (!isEmail(email)) {
+      throw new BadRequestException('Informe um email válido');
+    }
+
     return !(await userHelper.checkIfUserExists(
       this.userRepository,
       email,
@@ -42,8 +69,8 @@ export class AuthService {
 
   async signIn(userDto: SignInUserDto) {
     const matchedUser = await this.validateUser(
-      userDto.email,
-      userDto.password,
+      userDto.username,
+      userDto.secret,
     );
 
     if (!matchedUser) {
@@ -65,7 +92,7 @@ export class AuthService {
 
   async signUp(userDto: SignUpUserDto) {
     try {
-      const { alias, email, password, client_id } = userDto;
+      const { alias, email, secret, client_id } = userDto;
 
       const userAlreadyExists = await userHelper.checkIfUserExists(
         this.userRepository,
@@ -77,18 +104,18 @@ export class AuthService {
         throw new ConflictException('Email ou apelido já registrados.');
       }
 
-      const secret = bcrypt.hashSync(password, 10);
+      const password = bcrypt.hashSync(secret, 10);
 
       const user = this.userRepository.create({
         alias,
         email,
-        password: secret,
+        password,
         client_id: client_id ?? 1,
       });
 
       const created = await this.userRepository.save(user);
 
-      const { access_token } = await this.signIn({ email, password });
+      const { access_token } = await this.signIn({ username: email, secret });
       return {
         ...PbEntity.pick(created, ['id', 'alias', 'email', 'client_id']),
         access_token,

@@ -10,7 +10,6 @@ import { AuthService } from './auth.service';
 import { SignUpUserDto } from './dto/signup-user.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
 import ExceptionInterceptor from '../../common/interceptors/exception.interceptor';
-import { AvailabilityUserDto } from './dto/availability-user.dto';
 
 @Controller('')
 @UseInterceptors(ExceptionInterceptor)
@@ -45,7 +44,7 @@ export class AuthController {
   }
 
   @Post('signin')
-  async login(@Body() userDto: SignInUserDto) {
+  async signIn(@Body() userDto: SignInUserDto) {
     try {
       return this.authService.signIn(userDto);
     } catch (err) {

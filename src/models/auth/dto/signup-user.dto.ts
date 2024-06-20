@@ -19,7 +19,7 @@ export class SignUpUserDto {
 
   @IsString()
   @MinLength(6)
-  readonly password: string;
+  readonly secret: string;
 
   @IsNumber()
   @IsNotEmpty()
