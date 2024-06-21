@@ -1,7 +1,6 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   MinLength,
@@ -20,9 +19,4 @@ export class SignUpUserDto {
   @IsString()
   @MinLength(6)
   readonly secret: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  @IsOptional()
-  readonly client_id?: number;
 }

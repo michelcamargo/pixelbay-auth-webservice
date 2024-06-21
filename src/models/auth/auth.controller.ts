@@ -4,14 +4,18 @@ import {
   Get,
   Post,
   Query,
+  UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpUserDto } from './dto/signup-user.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
 import ExceptionInterceptor from '../../common/interceptors/exception.interceptor';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
 
-@Controller('')
+@Controller()
 @UseInterceptors(ExceptionInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -53,5 +57,12 @@ export class AuthController {
         err: 'FALHA AO REALIZAR LOGIN',
       };
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  @Permissions('read', 'write')
+  getProfile(@Request() req: any) {
+    return req.user;
   }
 }

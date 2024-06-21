@@ -25,8 +25,8 @@ import RootExceptionsFilter from './common/filters/root-exceptions.filter';
     }),
     WinstonModule.forRoot({
       transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'application.log' }),
+        new winston.transports.Console({ handleExceptions: true }),
+        new winston.transports.File({ filename: './logs/application.log' }),
       ],
     }),
     AuthModule,

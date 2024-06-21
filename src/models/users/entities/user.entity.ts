@@ -18,6 +18,9 @@ export class UserEntity extends PbEntity {
   @Column()
   client_id: number;
 
+  @Column()
+  oauth_id: number;
+
   @Column({ default: false })
   is_removed: boolean;
 

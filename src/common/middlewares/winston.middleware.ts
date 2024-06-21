@@ -8,8 +8,8 @@ export class WinstonMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     expressWinston.logger({
       transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'request.log' }),
+        // new winston.transports.Console({ handleExceptions: true }),
+        new winston.transports.File({ filename: './logs/request.log' }),
       ],
       format: winston.format.combine(
         winston.format.colorize(),
@@ -20,7 +20,7 @@ export class WinstonMiddleware implements NestMiddleware {
       expressFormat: true,
       colorize: false,
       requestWhitelist: ['url', 'method', 'originalUrl', 'query'],
-      dynamicMeta: (_req, _res) => ({ user_id: 99 }), // add metadados dinâmicos
+      dynamicMeta: (req, _res) => ({ user: req.user }), // add metadados dinâmicos
       ignoreRoute: (_req, _res) => false,
     })(req, res, next);
   }

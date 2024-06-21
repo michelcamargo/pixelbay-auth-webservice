@@ -60,24 +60,34 @@ export class AuthService {
       throw new BadRequestException('Informe um email válido');
     }
 
-    return !(await userHelper.checkIfUserExists(
+    const availability = !(await userHelper.checkIfUserExists(
       this.userRepository,
       email,
       alias,
     ));
+
+    return {
+      email,
+      alias,
+      availability,
+    };
   }
 
   async signIn(userDto: SignInUserDto) {
-    const matchedUser = await this.validateUser(
-      userDto.username,
-      userDto.secret,
-    );
+    const { username, secret } = userDto;
+    const matchedUser = await this.validateUser(username, secret);
 
     if (!matchedUser) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const payload = { username: matchedUser.email, sub: matchedUser.id };
+    const payload = {
+      username: username,
+      sub: matchedUser.id,
+      email: matchedUser.email,
+      client_id: matchedUser.client_id,
+      oauth_id: matchedUser.oauth_id,
+    };
     const access_token = this.jwtService.sign(payload);
 
     if (!access_token) {
@@ -92,7 +102,7 @@ export class AuthService {
 
   async signUp(userDto: SignUpUserDto) {
     try {
-      const { alias, email, secret, client_id } = userDto;
+      const { alias, email, secret } = userDto;
 
       const userAlreadyExists = await userHelper.checkIfUserExists(
         this.userRepository,
@@ -110,7 +120,8 @@ export class AuthService {
         alias,
         email,
         password,
-        client_id: client_id ?? 1,
+        client_id: 1,
+        oauth_id: 10,
       });
 
       const created = await this.userRepository.save(user);

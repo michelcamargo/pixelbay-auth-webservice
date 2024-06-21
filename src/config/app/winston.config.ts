@@ -7,7 +7,7 @@ export const winstonLogger = winston.createLogger({
     winston.format.json(),
   ),
   transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'application.log' }),
+    // new winston.transports.Console(),
+    new winston.transports.File({ filename: './logs/application.log' }),
   ],
 });

@@ -1,9 +1,21 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
+import * as fs from 'node:fs';
 
 const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
-  const isProductionEnv = configService.get<string>('APP_ENV') === 'production';
+  const isProd = configService.get<string>('APP_ENV') === 'production';
+  let sslCert: Buffer | false = false;
+
+  if (isProd) {
+    try {
+      sslCert = fs.readFileSync(
+        join(__dirname, '../..', 'cert/pg-pb.crt').toString(),
+      );
+    } catch (e) {
+      console.error('Certificado SSL não encontrado em:', e?.path);
+    }
+  }
 
   return {
     type: 'postgres',
@@ -18,8 +30,9 @@ const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
     migrationsTableName: 'migrations',
     migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
     autoLoadEntities: true,
-    synchronize: !isProductionEnv,
+    synchronize: !isProd,
     logging: false,
+    ssl: sslCert ? { ca: sslCert } : false,
   };
 };
 
