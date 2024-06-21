@@ -5,4 +5,4 @@ import { AddressEntity } from './entities/address.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([AddressEntity])],
 })
-export class AddressModule {}
+export class AddressesModule {}

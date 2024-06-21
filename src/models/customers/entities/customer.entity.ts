@@ -6,8 +6,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
-import { AddressEntity } from '../../address/entities/address.entity';
-import { PbEntity } from "../../../common/entities/base.entity";
+import { AddressEntity } from '../../addresses/entities/address.entity';
+import { PbEntity } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_customers' })
 export class CustomerEntity extends PbEntity {

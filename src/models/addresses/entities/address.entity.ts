@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToOne,
-} from 'typeorm';
-import { CustomerEntity } from '../../customers/entities/customer.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { PbEntity } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_addresses' })
