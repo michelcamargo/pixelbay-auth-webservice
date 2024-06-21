@@ -3,12 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  BaseEntity,
+  OneToOne,
 } from 'typeorm';
 import { CustomerEntity } from '../../customers/entities/customer.entity';
+import { PbEntity } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_addresses' })
-export class AddressEntity extends BaseEntity {
+export class AddressEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -41,7 +42,4 @@ export class AddressEntity extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   updated_at: Date;
-
-  @ManyToOne(() => CustomerEntity, (customer) => customer.addresses)
-  customer: CustomerEntity;
 }

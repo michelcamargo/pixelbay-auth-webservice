@@ -15,6 +15,7 @@ import { PbEntity } from '../../common/entities/base.entity';
 import userHelper from './helpers/user.helper';
 import { AvailabilityUserDto } from './dto/availability-user.dto';
 import { isEmail, maxLength, minLength } from 'class-validator';
+import { CustomerEntity } from '../customers/entities/customer.entity';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,8 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(CustomerEntity)
+    private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
   async validateUser(username: string, secret: string): Promise<UserEntity> {
@@ -123,12 +126,19 @@ export class AuthService {
         client_id: 1,
         oauth_id: 10,
       });
-
       const created = await this.userRepository.save(user);
 
+      const customer = this.customerRepository.create({
+        user_id: created.id,
+        email,
+      });
+      const createdCustomer = await this.customerRepository.save(customer);
+
       const { access_token } = await this.signIn({ username: email, secret });
+
       return {
         ...PbEntity.pick(created, ['id', 'alias', 'email', 'client_id']),
+        customer_id: createdCustomer.id,
         access_token,
       };
     } catch (err) {

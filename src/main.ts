@@ -4,7 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import swaggerHelper from './common/helpers/swagger.helper';
-// import helmet from 'helmet';
+import helmet from 'helmet';
 // import * as fs from 'node:fs';
 
 async function bootstrap() {
@@ -25,7 +25,7 @@ async function bootstrap() {
 
   swaggerHelper.generateAppDocument(app);
   app.useGlobalPipes(new ValidationPipe());
-  // app.use(helmet());
+  app.use(helmet());
 
   await app.listen(runtimePort);
   console.log(`${appName} @ ${runtimeUrl}`);

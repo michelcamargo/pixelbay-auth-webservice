@@ -4,23 +4,21 @@ import {
   Column,
   OneToOne,
   JoinColumn,
-  OneToMany,
-  BaseEntity,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { AddressEntity } from '../../address/entities/address.entity';
+import { PbEntity } from "../../../common/entities/base.entity";
 
 @Entity({ name: 'pb_customers' })
-export class CustomerEntity extends BaseEntity {
+export class CustomerEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   user_id: number;
 
-  @OneToOne(() => AddressEntity)
-  @JoinColumn({ name: 'address_id' })
-  address: AddressEntity;
+  @Column({ nullable: true })
+  address_id: number;
 
   @Column({ length: 255 })
   email: string;
@@ -56,6 +54,7 @@ export class CustomerEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @OneToMany(() => AddressEntity, (address) => address.customer)
-  addresses: AddressEntity[];
+  @OneToOne(() => AddressEntity)
+  @JoinColumn({ name: 'address_id' })
+  address: AddressEntity;
 }

@@ -1,9 +1,17 @@
-import { Controller, Get, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Request,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import ExceptionInterceptor from './common/interceptors/exception.interceptor';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { Permissions } from './common/decorators/permissions.decorator';
 
-@Controller('')
+@Controller()
 @UseInterceptors(ExceptionInterceptor)
-export class AuthController {
+export class AppController {
   constructor() {}
 
   @Get('healthcheck')
@@ -17,5 +25,12 @@ export class AuthController {
         message: 'Error',
       };
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  @Permissions('read', 'write')
+  getProfile(@Request() req: any) {
+    return req.user;
   }
 }
