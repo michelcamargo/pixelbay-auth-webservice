@@ -6,13 +6,13 @@ export class UserEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: true, length: 63 })
   alias?: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, length: 127 })
   email: string;
 
-  @Column()
+  @Column({ length: 50 })
   password: string;
 
   @Column()
@@ -27,7 +27,7 @@ export class UserEntity extends PbEntity {
   @Column({ default: false })
   is_block: boolean;
 
-  @Column({ nullable: true })
+  @Column({ length: 63, nullable: true })
   last_address: string;
 
   @Column({ type: 'timestamp', nullable: true })

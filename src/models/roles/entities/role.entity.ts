@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { ClientEntity } from '../../clients/entities/client.entity';
-import { PbEntity } from '../../../common/entities/base.entity'; // Assumindo que você tem uma entidade Client
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { PbEntity } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_roles' })
 export class RoleEntity extends PbEntity {
@@ -15,7 +14,4 @@ export class RoleEntity extends PbEntity {
 
   @Column('text', { array: true })
   permissions: string[];
-
-  @ManyToOne(() => ClientEntity, (client) => client.roles)
-  client: ClientEntity;
 }

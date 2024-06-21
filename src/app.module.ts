@@ -10,7 +10,7 @@ import LoggingInterceptor from './common/interceptors/logging.interceptor';
 import * as winston from 'winston';
 import { WinstonMiddleware } from './common/middlewares/winston.middleware';
 import RootExceptionsFilter from './common/filters/root-exceptions.filter';
-import { AppController } from "./app.controller";
+import { AppController } from './app.controller';
 
 @Module({
   imports: [

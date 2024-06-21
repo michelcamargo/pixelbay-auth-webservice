@@ -1,6 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { PbEntity } from '../../../common/entities/base.entity';
-import { RoleEntity } from "../../roles/entities/role.entity";
 
 @Entity({ name: 'pb_clients' })
 export class ClientEntity extends PbEntity {
@@ -19,12 +18,9 @@ export class ClientEntity extends PbEntity {
   @Column()
   created_by: string;
 
-  @Column()
-  created_at: string;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
 
-  @Column()
-  updated_at: string;
-
-  @OneToMany(() => RoleEntity, (role) => role.client)
-  roles: RoleEntity[];
+  @Column({ type: 'timestamp', nullable: true })
+  updated_at: Date;
 }

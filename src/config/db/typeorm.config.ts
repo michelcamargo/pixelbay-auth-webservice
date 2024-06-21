@@ -10,8 +10,10 @@ const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   if (isProd) {
     try {
       sslCert = fs.readFileSync(
-        join(__dirname, '../..', 'cert/pg-pb.crt').toString(),
+        // join(__dirname, '../..', 'cert/pg-pb.crt').toString(),
+        join(__dirname, '../..', 'cert/prod-ca-2021.crt').toString(), // supabase db
       );
+      console.error('Certificado SSL encontrado');
     } catch (e) {
       console.error('Certificado SSL não encontrado em:', e?.path);
     }

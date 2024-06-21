@@ -17,14 +17,17 @@ export class CustomerEntity extends PbEntity {
   @Column()
   user_id: number;
 
-  @Column({ nullable: true })
-  address_id: number;
-
   @Column({ length: 255 })
   email: string;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ length: 255 })
   fullname: string;
+
+  @Column()
+  birthdate: Date;
+
+  @Column({ nullable: true })
+  address_id: number;
 
   @Column({ length: 127, nullable: true })
   firstname: string;
