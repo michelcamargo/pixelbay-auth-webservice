@@ -51,9 +51,9 @@ export class UsersController {
         access_token,
       };
     } catch (err) {
-      console.error('FALHA AO REALIZAR LOGIN >>>', err);
+      console.error('Falha ao cadastrar usuário', err);
       return {
-        err: 'FALHA AO REALIZAR LOGIN',
+        err: 'Falha ao cadastrar usuário',
       };
     }
   }

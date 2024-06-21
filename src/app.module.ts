@@ -11,6 +11,7 @@ import * as winston from 'winston';
 import { WinstonMiddleware } from './common/middlewares/winston.middleware';
 import RootExceptionsFilter from './common/filters/root-exceptions.filter';
 import { AppController } from './app.controller';
+import { UsersModule } from "./models/users/users.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AppController } from './app.controller';
       ],
     }),
     AuthModule,
+    UsersModule,
   ],
   providers: [
     {

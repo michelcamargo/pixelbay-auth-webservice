@@ -23,35 +23,35 @@ export class CustomerEntity extends PbEntity {
   @Column({ length: 255 })
   fullname: string;
 
-  @Column()
-  birthdate: Date;
+  @Column({ nullable: true })
+  birthdate?: Date;
 
   @Column({ nullable: true })
-  address_id: number;
+  address_id?: number;
 
   @Column({ length: 127, nullable: true })
-  firstname: string;
+  firstname?: string;
 
   @Column({ length: 127, nullable: true })
-  lastname: string;
+  lastname?: string;
 
   @Column({ length: 31, nullable: true })
-  phone: string;
+  phone?: string;
 
   @Column({ length: 255, nullable: true })
-  business_name: string;
+  business_name?: string;
 
   @Column({ length: 511, nullable: true })
-  description: string;
+  description?: string;
 
   @Column({ length: 511, nullable: true })
-  notes: string;
+  notes?: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  updated_at: Date;
+  updated_at?: Date;
 
   @OneToOne(() => UserEntity)
   @JoinColumn({ name: 'user_id' })
