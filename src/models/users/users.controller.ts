@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Query,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import ExceptionInterceptor from '../../common/interceptors/exception.interceptor';
@@ -12,6 +15,11 @@ import { AuthService } from '../auth/auth.service';
 import { PbEntity } from '../../common/entities/base.entity';
 import { SignUpUserDto } from './dto/signup-user.dto';
 import { CustomersService } from '../customers/customers.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { UserEntity } from './entities/user.entity';
+import { CustomerEntity } from '../customers/entities/customer.entity';
 
 @Controller('users')
 @UseInterceptors(ExceptionInterceptor)
@@ -73,15 +81,17 @@ export class UsersController {
     }
   }
 
-  // @Delete(':id') id: string;
-  // async removeUser(@Body() userDto: SignInUserDto) {
-  //   try {
-  //     return this.usersService.excludeUser(userDto);
-  //   } catch (err) {
-  //     console.error('FALHA AO REALIZAR LOGIN >>>', err);
-  //     return {
-  //       err: 'FALHA AO REALIZAR LOGIN',
-  //     };
-  //   }
-  // }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Permissions(UserEntity.permissions.delete, CustomerEntity.permissions.delete)
+  async removeUser(@Param('id') userId: string) {
+    try {
+      return await this.usersService.excludeUser(Number(userId));
+    } catch (err) {
+      console.error('FALHA AO EXCLUIR USUÁRIO >>>', err);
+      return {
+        err: 'FALHA AO EXCLUIR USUÁRIO',
+      };
+    }
+  }
 }

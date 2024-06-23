@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { PbEntity } from '../../common/entities/base.entity';
 import { UsersService } from '../users/users.service';
-import { ConfigService } from "@nestjs/config";
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
       client_id: matchedUser.client_id,
       oauth_id: matchedUser.oauth_id,
     };
-    
+
     const jwtSecret = this.configService.get<string>('JWT_SECRET');
     const access_token = this.jwtService.sign(payload, { secret: jwtSecret });
 

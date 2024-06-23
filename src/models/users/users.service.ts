@@ -12,13 +12,29 @@ import { PbEntity } from '../../common/entities/base.entity';
 import { UserHelper } from './helpers/user.helper';
 import { AvailabilityUserDto } from './dto/availability-user.dto';
 import { isEmail, maxLength, minLength } from 'class-validator';
+import { RoleEntity } from '../roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(RoleEntity)
+    private readonly roleRepository: Repository<RoleEntity>,
   ) {}
+
+  async getUserPermissions(userId: number): Promise<string[]> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    const roles = await this.roleRepository.find({
+      where: { client_id: user.client_id },
+    });
+
+    return roles.flatMap((role) => role.permissions);
+  }
 
   async validateUser(username: string, secret: string): Promise<UserEntity> {
     const user = await UserHelper.findUserByUsername(
@@ -69,10 +85,28 @@ export class UsersService {
     };
   }
 
-  async excludeUser(userId: number) {
-    // this.userRepository.remove(userId);
+  async excludeUser(id: number) {
+    const user = await this.userRepository.findOneBy({ id });
 
-    return null;
+    if (user) {
+      const timestamp = new Date()
+        .toLocaleDateString('pt-BR')
+        .replace(/\//g, '-');
+      const newEmail = `rm__${user.email}__rm#${timestamp}`;
+      const newAlias = `rm__${user.alias}__rm`;
+
+      await this.userRepository
+        .createQueryBuilder()
+        .update(user)
+        .set({
+          is_removed: true,
+          is_block: true,
+          email: newEmail,
+          alias: newAlias,
+        })
+        .where('id = :id', { id })
+        .execute();
+    }
   }
 
   async createUser(userDto: SignUpUserDto) {
@@ -99,14 +133,6 @@ export class UsersService {
         oauth_id: 10,
       });
       const created = await this.userRepository.save(user);
-
-      // const { access_token } = await this.signIn({ username: email, secret });
-
-      // return {
-      //   ...PbEntity.pick(created, ['id', 'alias', 'email', 'client_id']),
-      //   customer_id: createdCustomer.id,
-      //   access_token,
-      // };
 
       return PbEntity.pick(created, ['id', 'alias', 'email', 'client_id']);
     } catch (err) {

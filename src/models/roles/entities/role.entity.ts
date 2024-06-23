@@ -1,7 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { PbEntity } from '../../../common/entities/base.entity';
+import { PbEntity, Permissions } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_roles' })
+@Permissions('pb_roles')
 export class RoleEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,4 +15,8 @@ export class RoleEntity extends PbEntity {
 
   @Column('text', { array: true })
   permissions: string[];
+
+  static getTableName(): string {
+    return this.name;
+  }
 }

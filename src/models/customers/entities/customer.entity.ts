@@ -7,9 +7,10 @@ import {
 } from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { AddressEntity } from '../../addresses/entities/address.entity';
-import { PbEntity } from '../../../common/entities/base.entity';
+import { PbEntity, Permissions } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_customers' })
+@Permissions('pb_customers')
 export class CustomerEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -60,4 +61,8 @@ export class CustomerEntity extends PbEntity {
   @OneToOne(() => AddressEntity)
   @JoinColumn({ name: 'address_id' })
   address: AddressEntity;
+
+  static getTableName(): string {
+    return this.name;
+  }
 }

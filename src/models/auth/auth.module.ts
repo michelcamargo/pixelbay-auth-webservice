@@ -10,11 +10,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { jwtConfig } from '../../config/auth/jwt.config';
 import { CustomerEntity } from '../customers/entities/customer.entity';
 import { UsersService } from '../users/users.service';
+import { RoleEntity } from '../roles/entities/role.entity';
 
 @Module({
   imports: [
     PassportModule,
-    TypeOrmModule.forFeature([UserEntity, CustomerEntity]),
+    TypeOrmModule.forFeature([UserEntity, CustomerEntity, RoleEntity]),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: jwtConfig,

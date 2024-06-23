@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import ExceptionInterceptor from './common/interceptors/exception.interceptor';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { Permissions } from './common/decorators/permissions.decorator';
 
 @Controller()
 @UseInterceptors(ExceptionInterceptor)
@@ -29,7 +28,6 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  @Permissions('read', 'write')
   getProfile(@Request() req: any) {
     return req.user;
   }

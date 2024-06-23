@@ -1,7 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { PbEntity } from '../../../common/entities/base.entity';
+import { PbEntity, Permissions } from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_addresses' })
+@Permissions('pb_addresses')
 export class AddressEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -35,4 +36,8 @@ export class AddressEntity extends PbEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   updated_at: Date;
+
+  static getTableName(): string {
+    return this.name;
+  }
 }
