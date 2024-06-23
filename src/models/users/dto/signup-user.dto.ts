@@ -56,4 +56,8 @@ export class SignUpUserDto {
   @IsString()
   @IsOptional()
   readonly notes?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly last_address?: string;
 }

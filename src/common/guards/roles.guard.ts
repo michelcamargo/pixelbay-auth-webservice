@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../../models/users/users.service';
+// import { ClientHelper } from '../helpers/client.helper';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -35,19 +36,22 @@ export class RolesGuard implements CanActivate {
 
     console.log('payload', payload);
 
-    if (!payload || payload.client_id !== 6) {
-      throw new ForbiddenException('Insufficient client permissions');
-    }
+    // if (!payload || payload.client_id !== ClientHelper.clientId.admin) {
+    //   throw new ForbiddenException('Cliente não autorizado');
+    // }
 
     const userPermissions = await this.usersService.getUserPermissions(
       payload.userId,
     );
+
+    console.log('userPermissions', userPermissions);
+
     const hasPermission = requiredPermissions.every((permission) =>
       userPermissions.includes(permission),
     );
 
     if (!hasPermission) {
-      throw new ForbiddenException('Insufficient permissions');
+      throw new ForbiddenException('Permissões insuficientes');
     }
 
     return true;

@@ -85,6 +85,10 @@ export class UsersService {
     };
   }
 
+  async getUser(id: number) {
+    return this.userRepository.findOneBy({ id });
+  }
+
   async excludeUser(id: number) {
     const user = await this.userRepository.findOneBy({ id });
 
@@ -129,8 +133,8 @@ export class UsersService {
         alias,
         email,
         password,
-        client_id: 1,
-        oauth_id: 10,
+        client_id: 3,
+        oauth_id: 1,
       });
       const created = await this.userRepository.save(user);
 
