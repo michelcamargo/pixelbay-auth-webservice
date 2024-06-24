@@ -33,9 +33,7 @@ export class UsersController {
   ) {}
 
   @Post()
-  async registerUser(@Body() userDto: SignUpUserDto, @Req() request: Request) {
-    const userIp = request.ip;
-
+  async registerUser(@Req() req: Request, @Body() userDto: SignUpUserDto) {
     try {
       const { email, secret, alias, fullname, ...customerInfo } = userDto;
       const user = await this.usersService.createUser({
@@ -43,7 +41,6 @@ export class UsersController {
         email,
         secret,
         fullname,
-        last_address: userIp,
       });
 
       const splittedName = fullname.split(' ');
@@ -60,10 +57,15 @@ export class UsersController {
         ...customerInfo,
       });
 
-      const { access_token } = await this.authService.signIn({
-        username: email,
-        secret,
-      });
+      const clientAddress = req.ip;
+
+      const { access_token } = await this.authService.signIn(
+        {
+          username: email,
+          secret,
+        },
+        clientAddress,
+      );
 
       return {
         ...PbEntity.pick(user, ['id', 'alias', 'email', 'client_id']),
@@ -110,7 +112,7 @@ export class UsersController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Permissions(UserEntity.permissions.delete, CustomerEntity.permissions.delete)
-  async removeUser(@Param('id') userId: string, @Req() req: Request) {
+  async removeUser(@Req() req: Request, @Param('id') userId: string) {
     try {
       return await this.usersService.excludeUser(Number(userId), {
         id: req.user.id,

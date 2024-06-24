@@ -100,8 +100,8 @@ export class UsersService {
       const timestamp = new Date()
         .toLocaleDateString('pt-BR')
         .replace(/\//g, '-');
-      const newEmail = `rm__${user.email}__rm#${timestamp}`;
-      const newAlias = `rm__${user.alias}__rm`;
+      const newEmail = `__rm__${user.email}__rm__#${timestamp}`;
+      const newAlias = `__rm__${user.alias}__rm__`;
 
       await this.userRepository
         .createQueryBuilder()
@@ -111,7 +111,7 @@ export class UsersService {
           is_block: true,
           email: newEmail,
           alias: newAlias,
-          details: `rm-by-${requester.id}@${requester.address}#${timestamp}`,
+          details: `rm_by=${requester.id}@${requester.address}#${timestamp}`,
         })
         .where('id = :id', { id })
         .execute();
@@ -120,7 +120,7 @@ export class UsersService {
 
   async createUser(userDto: SignUpUserDto) {
     try {
-      const { alias, email, secret } = userDto;
+      const { alias, email, secret, description } = userDto;
 
       const userAlreadyExists = await UserHelper.checkIfUserExists(
         this.userRepository,
@@ -140,6 +140,8 @@ export class UsersService {
         password,
         client_id: ClientHelper.CLIENT_IDS.guest,
         oauth_id: 1,
+        details: description,
+        
       });
       const created = await this.userRepository.save(user);
 

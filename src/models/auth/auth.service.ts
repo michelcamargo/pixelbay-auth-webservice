@@ -4,6 +4,10 @@ import { SignInUserDto } from './dto/signin-user.dto';
 import { PbEntity } from '../../common/entities/base.entity';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from '../users/entities/user.entity';
+import { Repository } from 'typeorm';
+import { UserHelper } from '../users/helpers/user.helper';
 
 @Injectable()
 export class AuthService {
@@ -11,9 +15,11 @@ export class AuthService {
     private jwtService: JwtService,
     private readonly userService: UsersService,
     private readonly configService: ConfigService,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async signIn(userDto: SignInUserDto) {
+  async signIn(userDto: SignInUserDto, clientAddress: string) {
     const { username, secret } = userDto;
     const matchedUser = await this.userService.validateUser(username, secret);
 
@@ -34,6 +40,12 @@ export class AuthService {
     if (!access_token) {
       throw new UnauthorizedException('Falha ao gerar acesso');
     }
+
+    await UserHelper.updateLastAccess(
+      this.userRepository,
+      matchedUser.id,
+      clientAddress,
+    );
 
     return {
       ...PbEntity.pick(matchedUser, ['id', 'alias', 'email', 'client_id']),

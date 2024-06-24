@@ -44,8 +44,30 @@ export abstract class PbEntity extends BaseEntity {
     [key: string]: string; // custom
   };
 
-  static getTableName(): string {
+  /**
+   * Retorna o nome da tabela relacionada, deve ser sobreescrito em entidade
+   */
+  protected getTableName(): string {
     throw new Error('getTableName() deve ser implementado pelas subclasses');
+  }
+
+  /**
+   * Retorna campos escondidos da tabela, devem ser sobreescrito em entidade
+   * @protected
+   */
+  protected getHiddenFields(): (keyof this)[] {
+    return [];
+  }
+
+  toJSON(): Record<string, any> {
+    const hiddenFields = this.getHiddenFields();
+    const entity = { ...this };
+
+    hiddenFields.forEach((field) => {
+      delete entity[field];
+    });
+
+    return entity;
   }
 
   static pick<T extends BaseEntity | PbEntity>(

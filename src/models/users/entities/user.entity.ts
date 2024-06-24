@@ -51,4 +51,15 @@ export class UserEntity extends PbEntity {
   static getTableName(): string {
     return this.name;
   }
+
+  protected getHiddenFields(): (keyof this)[] {
+    return [
+      'password',
+      'last_address',
+      'last_login',
+      'updated_at',
+      'created_at',
+      'oauth_id',
+    ];
+  }
 }
