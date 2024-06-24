@@ -95,7 +95,7 @@ export class UsersController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Permissions(UserEntity.permissions.read, CustomerEntity.permissions.read)
+  @Permissions(UserEntity.permissions.find, CustomerEntity.permissions.find)
   async getUserById(@Param('id') userId: string) {
     try {
       return await this.usersService.getUser(Number(userId));
@@ -110,9 +110,12 @@ export class UsersController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Permissions(UserEntity.permissions.delete, CustomerEntity.permissions.delete)
-  async removeUser(@Param('id') userId: string) {
+  async removeUser(@Param('id') userId: string, @Req() req: Request) {
     try {
-      return await this.usersService.excludeUser(Number(userId));
+      return await this.usersService.excludeUser(Number(userId), {
+        id: req.user.id,
+        address: req.ip,
+      });
     } catch (err) {
       console.error('FALHA AO EXCLUIR USUÁRIO >>>', err);
       return {

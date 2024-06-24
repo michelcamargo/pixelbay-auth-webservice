@@ -1,8 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { PbEntity, Permissions } from '../../../common/entities/base.entity';
+import {
+  PbEntity,
+  EntityPermissions,
+} from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_addresses' })
-@Permissions('pb_addresses')
+@EntityPermissions('pb_addresses')
 export class AddressEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;

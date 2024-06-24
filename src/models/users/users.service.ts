@@ -13,6 +13,7 @@ import { UserHelper } from './helpers/user.helper';
 import { AvailabilityUserDto } from './dto/availability-user.dto';
 import { isEmail, maxLength, minLength } from 'class-validator';
 import { RoleEntity } from '../roles/entities/role.entity';
+import ClientHelper from '../../common/helpers/client.helper';
 
 @Injectable()
 export class UsersService {
@@ -23,17 +24,20 @@ export class UsersService {
     private readonly roleRepository: Repository<RoleEntity>,
   ) {}
 
-  async getUserPermissions(userId: number): Promise<string[]> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new Error('Usuário não encontrado');
-    }
-
+  async getPermissionsByClientId(id: number): Promise<string[]> {
     const roles = await this.roleRepository.find({
-      where: { client_id: user.client_id },
+      where: { client_id: id },
     });
 
-    return roles.flatMap((role) => role.permissions);
+    const userPermissions: string[] = [];
+
+    roles.forEach((role) => {
+      role.permissions.forEach((permission) => {
+        userPermissions.push(`${permission}.${role.reference}`);
+      });
+    });
+
+    return userPermissions;
   }
 
   async validateUser(username: string, secret: string): Promise<UserEntity> {
@@ -89,7 +93,7 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async excludeUser(id: number) {
+  async excludeUser(id: number, requester: { address: string; id: number }) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (user) {
@@ -107,6 +111,7 @@ export class UsersService {
           is_block: true,
           email: newEmail,
           alias: newAlias,
+          details: `rm-by-${requester.id}@${requester.address}#${timestamp}`,
         })
         .where('id = :id', { id })
         .execute();
@@ -133,7 +138,7 @@ export class UsersService {
         alias,
         email,
         password,
-        client_id: 3,
+        client_id: ClientHelper.CLIENT_IDS.guest,
         oauth_id: 1,
       });
       const created = await this.userRepository.save(user);

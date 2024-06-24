@@ -1,8 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { PbEntity, Permissions } from '../../../common/entities/base.entity';
+import {
+  PbEntity,
+  EntityPermissions,
+} from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_roles' })
-@Permissions('pb_roles')
+@EntityPermissions('pb_roles')
 export class RoleEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -15,6 +18,15 @@ export class RoleEntity extends PbEntity {
 
   @Column('text', { array: true })
   permissions: string[];
+
+  @Column()
+  reference: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updated_at: Date;
 
   static getTableName(): string {
     return this.name;

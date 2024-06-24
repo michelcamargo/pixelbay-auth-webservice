@@ -1,8 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { PbEntity, Permissions } from '../../../common/entities/base.entity';
+import {
+  PbEntity,
+  EntityPermissions,
+} from '../../../common/entities/base.entity';
 
 @Entity({ name: 'pb_users' })
-@Permissions('pb_users')
+@EntityPermissions('pb_users')
 export class UserEntity extends PbEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -28,6 +31,9 @@ export class UserEntity extends PbEntity {
   @Column({ default: false })
   is_block: boolean;
 
+  @Column({ nullable: true })
+  details: string;
+
   @Column({ length: 63, nullable: true })
   last_address: string;
 
@@ -39,6 +45,8 @@ export class UserEntity extends PbEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   updated_at: Date;
+
+  permissions?: string[];
 
   static getTableName(): string {
     return this.name;

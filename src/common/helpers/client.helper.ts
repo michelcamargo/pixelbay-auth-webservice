@@ -1,12 +1,14 @@
-export class ClientHelper {
-  public static clientId: {
-    root: 1;
-    guest: 2;
-    default: 3;
-    customer: 4;
-    lead: 5;
-    integrator: 6;
-    mod: 7;
-    admin: 8;
-  };
-}
+const CLIENT_IDS = {
+  guest: 1,
+  default: 2,
+  customer: 3,
+  lead: 4,
+  integrator: 5,
+  mod: 6,
+  admin: 7,
+  root: 8,
+};
+
+export default {
+  CLIENT_IDS,
+};

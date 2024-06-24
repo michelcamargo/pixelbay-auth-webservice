@@ -22,29 +22,27 @@ export class RolesGuard implements CanActivate {
       'permissions',
       context.getHandler(),
     );
+
     if (!requiredPermissions) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.split(' ')[1];
+
     if (!token) {
       return false;
     }
 
     const payload = this.jwtService.decode(token) as any;
 
-    console.log('payload', payload);
-
     // if (!payload || payload.client_id !== ClientHelper.clientId.admin) {
     //   throw new ForbiddenException('Cliente não autorizado');
     // }
 
-    const userPermissions = await this.usersService.getUserPermissions(
-      payload.userId,
+    const userPermissions = await this.usersService.getPermissionsByClientId(
+      payload.client_id,
     );
-
-    console.log('userPermissions', userPermissions);
 
     const hasPermission = requiredPermissions.every((permission) =>
       userPermissions.includes(permission),
