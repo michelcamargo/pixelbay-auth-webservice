@@ -2,8 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
-  Query,
   Req,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,6 +16,18 @@ import { Request } from 'express';
 @UseInterceptors(ExceptionInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('handshake/:user')
+  async handshake(@Param('user') user: string) {
+    try {
+      return this.authService.handshake(user);
+    } catch (err) {
+      console.error('Falha ao checar usuário >>>', err);
+      return {
+        err: 'FALHA AO REALIZAR LOGIN',
+      };
+    }
+  }
 
   @Post('signin')
   async signIn(@Req() req: Request, @Body() userDto: SignInUserDto) {

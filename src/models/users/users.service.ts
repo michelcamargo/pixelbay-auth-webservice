@@ -40,7 +40,10 @@ export class UsersService {
     return userPermissions;
   }
 
-  async validateUser(username: string, secret: string): Promise<UserEntity> {
+  async validateUserAndSecret(
+    username: string,
+    secret: string,
+  ): Promise<UserEntity> {
     const user = await UserHelper.findUserByUsername(
       this.userRepository,
       username,
@@ -51,6 +54,10 @@ export class UsersService {
       return userInfo as UserEntity;
     }
     return null;
+  }
+
+  async getByUsername(username: string): Promise<UserEntity> {
+    return UserHelper.findUserByUsername(this.userRepository, username);
   }
 
   async checkUserAvailability({ email, alias }: AvailabilityUserDto) {
@@ -141,7 +148,6 @@ export class UsersService {
         client_id: ClientHelper.CLIENT_IDS.guest,
         oauth_id: 1,
         details: description,
-        
       });
       const created = await this.userRepository.save(user);
 

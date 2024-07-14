@@ -11,7 +11,7 @@ import * as winston from 'winston';
 import { WinstonMiddleware } from './common/middlewares/winston.middleware';
 import RootExceptionsFilter from './common/filters/root-exceptions.filter';
 import { AppController } from './app.controller';
-import { UsersModule } from "./models/users/users.module";
+import { UsersModule } from './models/users/users.module';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { UsersModule } from "./models/users/users.module";
     }),
     WinstonModule.forRoot({
       transports: [
-        new winston.transports.Console({ handleExceptions: true }),
+        // new winston.transports.Console({ handleExceptions: true }),
         new winston.transports.File({ filename: './logs/application.log' }),
       ],
     }),

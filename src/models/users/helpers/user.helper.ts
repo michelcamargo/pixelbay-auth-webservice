@@ -6,7 +6,6 @@ export class UserHelper {
   static async findUserByUsername(
     userRepository: Repository<UserEntity>,
     username: string,
-    block: boolean = false,
     excluded: boolean = false,
   ): Promise<UserEntity | undefined> {
     if (!username) {
@@ -15,8 +14,8 @@ export class UserHelper {
 
     return userRepository.findOne({
       where: [
-        { alias: username, is_block: block, is_removed: excluded },
-        { email: username, is_block: block, is_removed: excluded },
+        { alias: username, is_removed: excluded },
+        { email: username, is_removed: excluded },
       ],
     });
   }

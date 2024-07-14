@@ -19,9 +19,17 @@ export class AuthService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
+  async handshake(username: string) {
+    const matchedUser = await this.userService.getByUsername(username);
+    return Boolean(matchedUser);
+  }
+
   async signIn(userDto: SignInUserDto, clientAddress: string) {
     const { username, secret } = userDto;
-    const matchedUser = await this.userService.validateUser(username, secret);
+    const matchedUser = await this.userService.validateUserAndSecret(
+      username,
+      secret,
+    );
 
     if (!matchedUser) {
       throw new UnauthorizedException('Credenciais inválidas');

@@ -19,7 +19,16 @@ async function bootstrap() {
   const appConfig = app.get(ConfigService);
   const runtimeUrl = appConfig.get<number>('APP_URL');
   const runtimePort = appConfig.get<number>('PORT');
+  const runtimeEnv = appConfig.get<string>('APP_ENV');
   const appName = appConfig.get<string>('APP_NAME');
+
+  if (runtimeEnv === 'development') {
+    app.enableCors({
+      origin: runtimeEnv === 'development' ? '*' : '',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      allowedHeaders: 'Content-Type, Authorization',
+    });
+  }
 
   if (!runtimeUrl || !runtimePort) throw Error('Sem variáveis de ambiente');
 
