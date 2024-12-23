@@ -59,7 +59,7 @@ export class UsersController {
 
       const clientAddress = req.ip;
 
-      const { access_token } = await this.authService.signIn(
+      const { auth } = await this.authService.signIn(
         {
           username: email,
           secret,
@@ -68,9 +68,11 @@ export class UsersController {
       );
 
       return {
-        ...PbEntity.pick(user, ['id', 'alias', 'email', 'client_id']),
-        customer_id: customer.id,
-        access_token,
+        profile: {
+          ...PbEntity.pick(user, ['id', 'alias', 'email', 'client_id']),
+          customer_id: customer.id,
+        },
+        token: auth.token,
       };
     } catch (err) {
       console.error('Falha ao cadastrar usuário', err);

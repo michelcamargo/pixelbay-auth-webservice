@@ -17,4 +17,8 @@ export class CustomersService {
     const customer = this.customerRepository.create(customerDto);
     return this.customerRepository.save(customer);
   }
+
+  async getByUserId(userId: number): Promise<CustomerEntity> {
+    return this.customerRepository.findOneBy({ user_id: userId });
+  }
 }
