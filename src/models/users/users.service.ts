@@ -5,14 +5,12 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { SignUpUserDto } from './dto/signup-user.dto';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity } from '@michelcamargo/website-shared';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PbEntity } from '../../common/entities/base.entity';
 import { UserHelper } from './helpers/user.helper';
 import { AvailabilityUserDto } from './dto/availability-user.dto';
 import { isEmail, maxLength, minLength } from 'class-validator';
-import { RoleEntity } from '../roles/entities/role.entity';
 import ClientHelper from '../../common/helpers/client.helper';
 
 @Injectable()
@@ -20,25 +18,7 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(RoleEntity)
-    private readonly roleRepository: Repository<RoleEntity>,
   ) {}
-
-  async getPermissionsByClientId(id: number): Promise<string[]> {
-    const roles = await this.roleRepository.find({
-      where: { client_id: id },
-    });
-
-    const userPermissions: string[] = [];
-
-    roles.forEach((role) => {
-      role.permissions.forEach((permission) => {
-        userPermissions.push(`${permission}.${role.reference}`);
-      });
-    });
-
-    return userPermissions;
-  }
 
   async validateUserAndSecret(
     username: string,
@@ -96,11 +76,17 @@ export class UsersService {
     };
   }
 
-  async getUser(id: number) {
-    return this.userRepository.findOneBy({ id });
+  async findById(
+    id: string,
+    options?: { relations?: string[] },
+  ): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: options?.relations || [],
+    });
   }
 
-  async excludeUser(id: number, requester: { address: string; id: number }) {
+  async excludeUser(id: string, requester: { address: string; id: string }) {
     const user = await this.userRepository.findOneBy({ id });
 
     if (user) {
@@ -109,13 +95,14 @@ export class UsersService {
         .replace(/\//g, '-');
       const newEmail = `__rm__${user.email}__rm__#${timestamp}`;
       const newAlias = `__rm__${user.alias}__rm__`;
+      // anonimizar
 
       await this.userRepository
         .createQueryBuilder()
         .update(user)
         .set({
-          is_removed: true,
-          is_block: true,
+          isRemoved: true,
+          isRestricted: true,
           email: newEmail,
           alias: newAlias,
           details: `rm_by=${requester.id}@${requester.address}#${timestamp}`,
@@ -126,34 +113,37 @@ export class UsersService {
   }
 
   async createUser(userDto: SignUpUserDto) {
-    try {
-      const { alias, email, secret, description } = userDto;
+    const { alias, email, secret, description, profileId } = userDto;
 
-      const userAlreadyExists = await UserHelper.checkIfUserExists(
-        this.userRepository,
-        email,
-        alias,
-      );
+    const userAlreadyExists = await UserHelper.checkIfUserExists(
+      this.userRepository,
+      email,
+      alias,
+    );
 
-      if (userAlreadyExists) {
-        throw new ConflictException('Email ou apelido já registrados.');
-      }
-
-      const password = bcrypt.hashSync(secret, 10);
-
-      const user = this.userRepository.create({
-        alias,
-        email,
-        password,
-        client_id: ClientHelper.CLIENT_IDS.guest,
-        oauth_id: 1,
-        details: description,
-      });
-      const created = await this.userRepository.save(user);
-
-      return PbEntity.pick(created, ['id', 'alias', 'email', 'client_id']);
-    } catch (err) {
-      console.error(err);
+    if (userAlreadyExists) {
+      throw new ConflictException('Email ou apelido já registrados.');
     }
+
+    const password = bcrypt.hashSync(secret, 10);
+
+    const user = this.userRepository.create({
+      alias,
+      email,
+      password,
+      clientId: ClientHelper.CLIENT_IDS.guest,
+      oauthId: 'auth0|12346',
+      details: description,
+      profileId: profileId ?? 1,
+    });
+
+    const created = await this.userRepository.save(user);
+
+    return {
+      id: created.id,
+      alias: created.alias,
+      email: created.email,
+      profileId: created.profileId,
+    };
   }
 }

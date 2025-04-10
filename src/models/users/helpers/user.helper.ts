@@ -1,5 +1,5 @@
-import { Repository } from 'typeorm';
-import { UserEntity } from '../entities/user.entity';
+import { ILike, Repository } from 'typeorm';
+import { UserEntity } from '@michelcamargo/website-shared';
 import { BadRequestException } from '@nestjs/common';
 
 export class UserHelper {
@@ -14,8 +14,8 @@ export class UserHelper {
 
     return userRepository.findOne({
       where: [
-        { alias: username, is_removed: excluded },
-        { email: username, is_removed: excluded },
+        { alias: ILike(username), isRemoved: excluded },
+        { email: ILike(username), isRemoved: excluded },
       ],
     });
   }
@@ -40,22 +40,32 @@ export class UserHelper {
 
   static async updateLastAccess(
     userRepository: Repository<UserEntity>,
-    userId: number,
+    userId: string,
     clientAddress: string,
   ) {
     await userRepository.update(userId, {
-      last_address: clientAddress,
-      last_login: () => 'CURRENT_TIMESTAMP',
+      lastAddress: clientAddress,
+      lastLogin: () => 'CURRENT_TIMESTAMP',
     });
 
     // await userRepository
     //   .createQueryBuilder()
     //   .update()
     //   .set({
-    //     last_address: clientAddress,
-    //     last_login: () => 'CURRENT_TIMESTAMP',
+    //     lastAddress: clientAddress,
+    //     lastLogin: () => 'CURRENT_TIMESTAMP',
     //   })
     //   .where('id = :id', { id: userId })
     //   .execute();
+  }
+
+  static isRemoved(user: UserEntity): boolean {
+    return (
+      user.isRemoved ||
+      user.email.includes('__rem') ||
+      user.email.includes('rem__') ||
+      user.alias.includes('rem__') ||
+      user.alias.includes('__rem')
+    );
   }
 }

@@ -1,16 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SignInUserDto } from './dto/signin-user.dto';
-import { PbEntity } from '../../common/entities/base.entity';
+import { PbEntity, UserEntity } from '@michelcamargo/website-shared';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { UserHelper } from '../users/helpers/user.helper';
 import { getExpirationTime } from './helpers/auth.helper';
 import { CustomersService } from '../customers/customers.service';
-import { CustomerEntity } from '../customers/entities/customer.entity';
+import { JWTHelper } from './helpers/crypto.helper';
+import { JwtAuthStrategyDTO } from '../../types/jwt';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class AuthService {
@@ -19,10 +20,9 @@ export class AuthService {
     private readonly userService: UsersService,
     private readonly customerService: CustomersService,
     private readonly configService: ConfigService,
+    private readonly roleService: RolesService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(CustomerEntity)
-    private readonly customerRepository: Repository<CustomerEntity>,
   ) {}
 
   async handshake(username: string) {
@@ -46,28 +46,59 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
+    if (matchedUser.isRestricted) {
+      throw new UnauthorizedException('Usuário está restrito');
+    }
+
+    if (UserHelper.isRemoved(matchedUser)) {
+      throw new UnauthorizedException('Usuário não registrado');
+    }
+
+    const profile = await this.roleService.getProfileName(
+      matchedUser.profileId,
+    );
     const customerInfo = await this.customerService.getByUserId(matchedUser.id);
 
-    const payload = {
-      username: matchedUser.email,
+    console.log({ customerInfo, profile });
+
+    if (!profile || !customerInfo) {
+      console.log('>>>>>>>>>>');
+
+      throw new UnauthorizedException();
+    }
+
+    const matchedUsername = matchedUser.email || matchedUser.alias;
+
+    if (!username) {
+      throw new UnauthorizedException('Usuário sem identificador válido');
+    }
+
+    const payload: JwtAuthStrategyDTO = {
+      username: matchedUsername,
       sub: matchedUser.id,
-      customer_id: customerInfo?.id,
-      client_id: matchedUser.client_id,
-      oauth_id: matchedUser.oauth_id,
+      // @ts-expect-error TS2322
+      profile: profile as string,
+      ...PbEntity.pick(matchedUser, ['alias', 'email']),
+      ...PbEntity.pick(customerInfo, ['firstname', 'lastname', 'fullname']),
     };
 
     const expiresIn = this.configService.get<string>('JWT_EXPIRATION');
     const expirationTime = getExpirationTime(expiresIn);
-
     const jwtSecret = this.configService.get<string>('JWT_SECRET');
-    const signedToken = this.jwtService.sign(payload, {
+    // const jwtEncryptionKey =
+    //   this.configService.get<string>('JWT_ENCRYPTION_KEY');
+    // const jwtIv = this.configService.get<string>('JWT_IV');
+
+    const token = JWTHelper.generateAccessToken(this.jwtService, payload, {
       secret: jwtSecret,
       expiresIn,
     });
 
-    if (!signedToken) {
-      throw new UnauthorizedException('Falha ao gerar acesso');
-    }
+    // const encryptedToken = JWTHelper.encryptToken(
+    //   token,
+    //   jwtEncryptionKey,
+    //   jwtIv,
+    // );
 
     await UserHelper.updateLastAccess(
       this.userRepository,
@@ -76,16 +107,11 @@ export class AuthService {
     );
 
     return {
-      profile: {
-        ...PbEntity.pick(matchedUser, ['id', 'alias', 'email', 'client_id']),
-        ...PbEntity.pick(customerInfo, ['firstname', 'lastname', 'fullname']),
-        customer_id: customerInfo?.id,
-      },
-      auth: {
-        token: signedToken,
-        refreshToken: signedToken,
-        expiresIn: expirationTime,
-      },
+      token,
+      // token: encryptedToken,
+      // refreshToken: encryptedToken,
+      refreshToken: token,
+      expiresIn: expirationTime,
     };
   }
 }

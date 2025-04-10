@@ -8,7 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInUserDto } from './dto/signin-user.dto';
+import { SignInUserDto } from '@michelcamargo/website-shared';
 import ExceptionInterceptor from '../../common/interceptors/exception.interceptor';
 import { Request } from 'express';
 

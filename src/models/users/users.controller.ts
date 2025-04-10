@@ -13,14 +13,13 @@ import {
 import ExceptionInterceptor from '../../common/interceptors/exception.interceptor';
 import { UsersService } from './users.service';
 import { AuthService } from '../auth/auth.service';
-import { PbEntity } from '../../common/entities/base.entity';
 import { SignUpUserDto } from './dto/signup-user.dto';
 import { CustomersService } from '../customers/customers.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { UserEntity } from './entities/user.entity';
-import { CustomerEntity } from '../customers/entities/customer.entity';
+import { UserEntity } from '@michelcamargo/website-shared';
+import { CustomerEntity } from '@michelcamargo/website-shared';
 import { Request } from 'express';
 
 @Controller('users')
@@ -34,52 +33,48 @@ export class UsersController {
 
   @Post()
   async registerUser(@Req() req: Request, @Body() userDto: SignUpUserDto) {
-    try {
-      const { email, secret, alias, fullname, ...customerInfo } = userDto;
-      const user = await this.usersService.createUser({
-        alias,
-        email,
+    const { email, secret, alias, fullname, profileId, ...customerInfo } =
+      userDto;
+
+    const user = await this.usersService.createUser({
+      alias,
+      email,
+      secret,
+      fullname,
+      profileId,
+    });
+
+    const splittedName = fullname.split(' ');
+
+    const customer = await this.customersService.createCustomer({
+      userId: user.id,
+      email: user.email,
+      fullname: fullname,
+      firstname: splittedName[0],
+      lastname:
+        splittedName.length - 1 > 0
+          ? splittedName[splittedName.length - 1]
+          : undefined,
+      ...customerInfo,
+    });
+
+    const clientAddress = req.ip;
+
+    const { token } = await this.authService.signIn(
+      {
+        username: email,
         secret,
-        fullname,
-      });
+      },
+      clientAddress,
+    );
 
-      const splittedName = fullname.split(' ');
-
-      const customer = await this.customersService.createCustomer({
-        user_id: user.id,
-        email: user.email,
-        fullname: fullname,
-        firstname: splittedName[0],
-        lastname:
-          splittedName.length - 1 > 0
-            ? splittedName[splittedName.length - 1]
-            : undefined,
-        ...customerInfo,
-      });
-
-      const clientAddress = req.ip;
-
-      const { auth } = await this.authService.signIn(
-        {
-          username: email,
-          secret,
-        },
-        clientAddress,
-      );
-
-      return {
-        profile: {
-          ...PbEntity.pick(user, ['id', 'alias', 'email', 'client_id']),
-          customer_id: customer.id,
-        },
-        token: auth.token,
-      };
-    } catch (err) {
-      console.error('Falha ao cadastrar usuário', err);
-      return {
-        err: 'Falha ao cadastrar usuário',
-      };
-    }
+    return {
+      userId: user.id,
+      alias: user.alias,
+      email: user.email,
+      customerId: customer.id,
+      token,
+    };
   }
 
   @Get('availability')
@@ -102,7 +97,7 @@ export class UsersController {
   @Permissions(UserEntity.permissions.find, CustomerEntity.permissions.find)
   async getUserById(@Param('id') userId: string) {
     try {
-      return await this.usersService.getUser(Number(userId));
+      return await this.usersService.findById(userId);
     } catch (err) {
       console.error('Falha ao buscar usuário >>>', err);
       return {
@@ -116,7 +111,7 @@ export class UsersController {
   @Permissions(UserEntity.permissions.delete, CustomerEntity.permissions.delete)
   async removeUser(@Req() req: Request, @Param('id') userId: string) {
     try {
-      return await this.usersService.excludeUser(Number(userId), {
+      return await this.usersService.excludeUser(userId, {
         id: req.user.id,
         address: req.ip,
       });

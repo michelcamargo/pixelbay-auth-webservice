@@ -5,25 +5,44 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { ConfigService } from '@nestjs/config';
-import { UserEntity } from '../users/entities/user.entity';
+import {
+  RoleEntity,
+  ProfileEntity,
+  UserEntity,
+  RolePermissionEntity,
+  CustomerEntity,
+} from '@michelcamargo/website-shared';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { jwtConfig } from '../../config/auth/jwt.config';
-import { CustomerEntity } from '../customers/entities/customer.entity';
 import { UsersService } from '../users/users.service';
-import { RoleEntity } from '../roles/entities/role.entity';
 import { CustomersService } from '../customers/customers.service';
+import { RolesService } from '../roles/roles.service';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
     PassportModule,
-    TypeOrmModule.forFeature([UserEntity, CustomerEntity, RoleEntity]),
+    RolesModule,
+    TypeOrmModule.forFeature([
+      UserEntity,
+      CustomerEntity,
+      RoleEntity,
+      RolePermissionEntity,
+      ProfileEntity,
+    ]),
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: jwtConfig,
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UsersService, CustomersService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    UsersService,
+    CustomersService,
+    RolesService,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

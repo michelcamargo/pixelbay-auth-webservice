@@ -8,8 +8,8 @@ export class WinstonMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     expressWinston.logger({
       transports: [
-        // new winston.transports.Console({ handleExceptions: true }),
-        new winston.transports.File({ filename: './logs/request.log' }),
+        new winston.transports.Console({ handleExceptions: true }),
+        // new winston.transports.File({ filename: './logs/request.log' }),
       ],
       format: winston.format.combine(
         winston.format.colorize(),

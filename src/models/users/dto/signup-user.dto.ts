@@ -20,9 +20,13 @@ export class SignUpUserDto {
   @IsNotEmpty()
   readonly fullname: string;
 
+  @IsOptional()
+  readonly profileId?: number;
+
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @MinLength(6)
   readonly alias?: string;
 
   @IsDate()
@@ -47,7 +51,7 @@ export class SignUpUserDto {
   @IsString()
   @MinLength(5)
   @IsOptional()
-  readonly business_name?: string;
+  readonly businessName?: string;
 
   @IsString()
   @IsOptional()
@@ -59,5 +63,5 @@ export class SignUpUserDto {
 
   @IsString()
   @IsOptional()
-  readonly last_address?: string;
+  readonly lastAddress?: string;
 }

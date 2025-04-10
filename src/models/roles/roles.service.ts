@@ -1,36 +1,59 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RoleEntity } from './entities/role.entity';
+import {
+  RolePermissionEntity,
+  RoleEntity,
+} from '@michelcamargo/website-shared';
 
 @Injectable()
 export class RolesService {
   constructor(
     @InjectRepository(RoleEntity)
-    private rolesRepository: Repository<RoleEntity>,
+    private roleRepository: Repository<RoleEntity>,
+    @InjectRepository(RolePermissionEntity)
+    private rolePermissionRepo: Repository<RolePermissionEntity>,
   ) {}
 
-  findAll() {
-    return this.rolesRepository.find({ relations: ['client'] });
+  async getPermissionsForRoleAndTable(
+    roleId: number,
+    tableName: string,
+  ): Promise<string[]> {
+    const permission = await this.rolePermissionRepo
+      .createQueryBuilder('rp')
+      .innerJoin('rp.role', 'role')
+      .where('role.id = :roleId', { roleId })
+      .andWhere('rp.tableName = :tableName', { tableName })
+      .getOne();
+
+    return permission?.permissions || [];
   }
 
-  findOne(id: number) {
-    return this.rolesRepository.findOne({
-      where: { id },
-      relations: ['client'],
+  async getRolePermissions(roleId: number): Promise<RolePermissionEntity[]> {
+    return this.rolePermissionRepo
+      .createQueryBuilder('rp')
+      .innerJoin('rp.role', 'role')
+      .where('role.id = :roleId', { roleId })
+      .getMany();
+  }
+
+  // async getProfileName(roleId: number): Promise<string | null> {
+  //   const result = await this.rolePermissionRepo
+  //     .createQueryBuilder('rp')
+  //     .innerJoin('rp.role', 'role')
+  //     .where('role.id = :roleId', { roleId })
+  //     .select(['rp.name'])
+  //     .getOne();
+  //
+  //   return result?.name || null;
+  // }
+
+  async getProfileName(roleId: number): Promise<string | null> {
+    const role = await this.roleRepository.findOne({
+      where: { id: roleId },
+      select: ['roleName'],
     });
-  }
 
-  create(role: Partial<RoleEntity>) {
-    const newRole = this.rolesRepository.create(role);
-    return this.rolesRepository.save(newRole);
-  }
-
-  update(id: number, role: Partial<RoleEntity>) {
-    return this.rolesRepository.update(id, role);
-  }
-
-  remove(id: number) {
-    return this.rolesRepository.delete(id);
+    return role?.roleName || null;
   }
 }

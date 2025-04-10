@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CustomerEntity } from './entities/customer.entity';
+import { CustomerEntity } from '@michelcamargo/website-shared';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class CustomersService {
     return this.customerRepository.save(customer);
   }
 
-  async getByUserId(userId: number): Promise<CustomerEntity> {
-    return this.customerRepository.findOneBy({ user_id: userId });
+  async getByUserId(userId: string): Promise<CustomerEntity> {
+    return this.customerRepository.findOneBy({ userId: userId });
   }
 }

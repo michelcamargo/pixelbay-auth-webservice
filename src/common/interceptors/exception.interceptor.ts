@@ -9,7 +9,7 @@ import { map } from 'rxjs/operators';
 
 @Injectable()
 class ExceptionInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     return next.handle().pipe(
       map((data) => {
         return {

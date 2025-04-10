@@ -1,5 +1,14 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import {
+  AddressEntity,
+  ClientEntity,
+  CustomerEntity,
+  ProfileEntity,
+  RoleEntity,
+  RolePermissionEntity,
+  UserEntity,
+} from '@michelcamargo/website-shared';
 import { join } from 'path';
 import * as fs from 'node:fs';
 
@@ -13,7 +22,6 @@ const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
         // join(__dirname, '../..', 'cert/pg-pb.crt').toString(),
         join(__dirname, '../..', 'cert/prod-ca-2021.crt').toString(), // supabase db
       );
-      console.error('Certificado SSL encontrado');
     } catch (e) {
       console.error('Certificado SSL não encontrado em:', e?.path);
     }
@@ -27,6 +35,13 @@ const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
     password: configService.get<string>('DB_PASSWORD'),
     database: configService.get<string>('DB_DATABASE'),
     entities: [
+      AddressEntity,
+      UserEntity,
+      ClientEntity,
+      CustomerEntity,
+      ProfileEntity,
+      RoleEntity,
+      RolePermissionEntity,
       join(__dirname, '../..', 'models', '*', 'entities', '*.{ts,js}'),
     ],
     migrationsTableName: 'migrations',
